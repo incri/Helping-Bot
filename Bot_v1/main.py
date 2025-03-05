@@ -9,6 +9,10 @@ from langchain_text_splitters import CharacterTextSplitter
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain import hub
 
 # Load environment variables
 load_dotenv()
@@ -96,18 +100,27 @@ def process_and_store_text(file_path: str):
     print("✅ Summarized data successfully stored in Pinecone!")
 
 
-# Perform similarity search
-def perform_search(query: str, top_k: int = 2):
-    print(f"🔎 Searching for: {query}")
-    query_embedding = embeddings.embed_documents([query])[0]
-    results = vector_store.similarity_search_with_score(query_embedding, k=top_k)
+# Add Retrieval Feature
+retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
+retriever = vector_store.as_retriever()
+llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro")
+combine_docs_chain = create_stuff_documents_chain(llm, retrieval_qa_chat_prompt)
+retrieval_chain = create_retrieval_chain(retriever, combine_docs_chain)
 
-    print("\n🔎 Search Results:")
-    for res, score in results:
-        print(f"[Score: {score}] {res.page_content}")
+
+def retrieve_answer(query: str):
+    response = retrieval_chain.invoke({"input": query})
+    print("Raw Response:", response)  # Debugging line
+
+    if "answer" in response:  # Change "output" to "answer"
+        return response["answer"]
+    else:
+        print("⚠️ 'answer' key not found in response!")
+        return "No valid response received."
 
 
 if __name__ == "__main__":
     print("📌 Gemini + Pinecone Setup Completed!")
     process_and_store_text("D:/langchain.txt")
-    perform_search("What is LangChain?")
+    query = "Tell me about baibhav paudel and what he is doing and should plan next in short"
+    print("🔹 Response:", retrieve_answer(query))
