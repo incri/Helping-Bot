@@ -135,6 +135,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+faiss_index_react/
 
 # Spyder project settings
 .spyderproject
