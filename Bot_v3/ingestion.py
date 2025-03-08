@@ -4,6 +4,7 @@ import time
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
 def ingest_docs() -> None:
@@ -12,7 +13,7 @@ def ingest_docs() -> None:
 
     pdf_path = "D:/projects/Helping-Bot/Bot_v2/2310.02759v1.pdf"
     pdf_loader = PyPDFLoader(pdf_path)
-    documents = pdf_loader.load()
+    raw_documents = pdf_loader.load()
 
     pc = Pinecone(api_key=PINECONE_API_KEY)
     INDEX_NAME = "helping-bot-v3-embedding-index"
@@ -27,6 +28,14 @@ def ingest_docs() -> None:
         )
         while not pc.describe_index(INDEX_NAME).status["ready"]:
             time.sleep(1)
+
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=400, chunk_overlap=50, separators=["\n\n", "\n", " ", ""]
+    )
+
+    documents = text_splitter.split_documents(documents=raw_documents)
+
+    print(f"documents size : {len(documents)}")
 
 
 if __name__ == "__main__":
