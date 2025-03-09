@@ -1,15 +1,20 @@
 import os
 import time
 
+
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
+import google.generativeai as genai
 
 
 def ingest_docs() -> None:
 
     PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
     pdf_path = "D:/projects/Helping-Bot/Bot_v2/2310.02759v1.pdf"
     pdf_loader = PyPDFLoader(pdf_path)
@@ -35,7 +40,12 @@ def ingest_docs() -> None:
 
     documents = text_splitter.split_documents(documents=raw_documents)
 
+    genai.configure(api_key=GOOGLE_API_KEY)
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+
     print(f"documents size : {len(documents)}")
+
+    PineconeVectorStore.from_documents(documents, embeddings, index_name=INDEX_NAME)
 
 
 if __name__ == "__main__":
