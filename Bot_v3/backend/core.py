@@ -8,6 +8,7 @@ from pinecone import Pinecone, ServerlessSpec
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain import hub
+import warnings
 
 # Load environment variables
 load_dotenv()
@@ -20,6 +21,11 @@ if not GOOGLE_API_KEY or not PINECONE_API_KEY:
     raise ValueError(
         "❌ Missing API keys! Set GOOGLE_API_KEY and PINECONE_API_KEY in .env."
     )
+
+warnings.filterwarnings(
+    "ignore", category=UserWarning, message=".*LangSmithMissingAPIKeyWarning.*"
+)
+
 
 # Configure Gemini AI
 genai.configure(api_key=GOOGLE_API_KEY)
@@ -43,12 +49,7 @@ def retrieve_answer(query: str):
     response = retrieval_chain.invoke({"input": query})
 
     if "answer" in response:
-        return response["answer"]
+        return response
     else:
         print("⚠️ 'answer' key not found in response!")
         return "No valid response received."
-
-
-if __name__ == "__main__":
-    query = "How does Automated Essay Scoring (AES) differ from conventional evaluation methods, and what is the primary goal of the research discussed in the document?"
-    print("🔹 Response:", retrieve_answer(query))
