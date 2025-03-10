@@ -11,6 +11,9 @@ if "user_prompt_history" not in st.session_state:
 if "chat_answer_history" not in st.session_state:
     st.session_state["chat_answer_history"] = []
 
+if "chat_history" not in st.session_state:
+    st.session_state["chat_history"] = []
+
 # User Input Box
 prompt = st.text_input(
     "💬 **Ask me anything:**", placeholder="Type your question here..."
@@ -30,7 +33,9 @@ def create_sources_string(sources_url: Set[str]) -> str:
 # Process user input
 if prompt:
     with st.spinner("Thinking..."):
-        generate_response = retrieve_answer(query=prompt)
+        generate_response = retrieve_answer(
+            query=prompt, chat_history=st.session_state["chat_answer_history"]
+        )
         sources = {doc.metadata["source"] for doc in generate_response["context"]}
         formatted_response = (
             f"{generate_response['answer']} \n\n {create_sources_string(sources)}"
@@ -39,6 +44,7 @@ if prompt:
         # Store conversation history
         st.session_state["user_prompt_history"].append(prompt)
         st.session_state["chat_answer_history"].append(formatted_response)
+        st.session_state["chat_history"].append((prompt, generate_response["answer"]))
 
 # Display chat history with better UI
 st.markdown("---")  # Separator for chat messages
