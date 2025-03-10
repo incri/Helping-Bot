@@ -6,6 +6,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGener
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
 from langchain.chains.retrieval import create_retrieval_chain
+from langchain.chains.history_aware_retriever import create_history_aware_retriever
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain import hub
 import warnings
@@ -39,14 +40,17 @@ vector_store = PineconeVectorStore(index_name=INDEX_NAME, embedding=embeddings)
 
 # Load Retrieval QA Chain
 retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
+rephrase_prompt = hub.pull("langchain-ai/chat-langchain-rephrase")
 retriever = vector_store.as_retriever()
 llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro")
 combine_docs_chain = create_stuff_documents_chain(llm, retrieval_qa_chat_prompt)
-retrieval_chain = create_retrieval_chain(retriever, combine_docs_chain)
+chat_retriever_chain = create_history_aware_retriever(llm, retriever, rephrase_prompt)
+
+retrieval_chain = create_retrieval_chain(chat_retriever_chain, combine_docs_chain)
 
 
-def retrieve_answer(query: str):
-    response = retrieval_chain.invoke({"input": query})
+def retrieve_answer(query: str, chat_history: list[dict[str, any]] = []) -> any:
+    response = retrieval_chain.invoke({"input": query, "chat_history": chat_history})
 
     if "answer" in response:
         return response
