@@ -1,75 +1,98 @@
 import streamlit as st
-from typing import Set
-from backend.core import retrieve_answer
-
-st.title("🤖 The Helping Bot")
-st.markdown("**Built using LangChain and powered by Google Gemini AI**")
-
-# Initialize session state for chat history
-if "user_prompt_history" not in st.session_state:
-    st.session_state["user_prompt_history"] = []
-if "chat_answer_history" not in st.session_state:
-    st.session_state["chat_answer_history"] = []
-
-if "chat_history" not in st.session_state:
-    st.session_state["chat_history"] = []
-
-# User Input Box
-prompt = st.text_input(
-    "💬 **Ask me anything:**", placeholder="Type your question here..."
+from frontend.workspace import (
+    handle_pdf_upload,
+    create_workspace,
+    list_workspaces,
 )
+from frontend.helper_bot import handle_chat
 
 
-# Function to format sources
-def create_sources_string(sources_url: Set[str]) -> str:
-    if not sources_url:
-        return ""
-    sources_list = sorted(list(sources_url))
-    return "📌 **Sources:**\n" + "\n".join(
-        f"{i+1}. {src}" for i, src in enumerate(sources_list)
+def main():
+    st.title("PDF Vector Store and Helping Bot")
+
+    # Sidebar for workspace management
+    st.sidebar.header("Workspace Management")
+    workspace_name = st.sidebar.text_input("Enter workspace name:")
+
+    # Creating a workspace
+    if st.sidebar.button("Create Workspace"):
+        if workspace_name:
+            create_workspace(workspace_name)
+            st.sidebar.success(f"Workspace '{workspace_name}' created successfully.")
+        else:
+            st.sidebar.error("Please enter a workspace name.")
+
+    # List and select existing workspaces
+    st.sidebar.subheader("Existing Workspaces")
+    workspaces = list_workspaces()
+    selected_workspace = st.sidebar.selectbox(
+        "Select a workspace:", ["-- Select --"] + workspaces
     )
 
+    # Clear the input box when workspace is switched
+    if "last_workspace" not in st.session_state:
+        st.session_state["last_workspace"] = None
 
-# Process user input
-if prompt:
-    with st.spinner("Thinking..."):
-        generate_response = retrieve_answer(
-            query=prompt, chat_history=st.session_state["chat_answer_history"]
-        )
-        sources = {doc.metadata["source"] for doc in generate_response["context"]}
-        formatted_response = (
-            f"{generate_response['answer']} \n\n {create_sources_string(sources)}"
-        )
+    if selected_workspace != st.session_state["last_workspace"]:
+        st.session_state["user_prompt_history"] = []
+        st.session_state["chat_answer_history"] = []
+        st.session_state["last_workspace"] = selected_workspace
+        st.rerun()  # Refresh the page on workspace switch
 
-        # Store conversation history
-        st.session_state["user_prompt_history"].append(prompt)
-        st.session_state["chat_answer_history"].append(formatted_response)
-        st.session_state["chat_history"].append((prompt, generate_response["answer"]))
+    # Proceed only if a workspace is selected
+    if selected_workspace and selected_workspace != "-- Select --":
+        # Handle PDF uploads and indexing for the selected workspace
+        handle_pdf_upload(selected_workspace)
 
-# Display chat history with better UI
-st.markdown("---")  # Separator for chat messages
-if st.session_state["chat_answer_history"]:
-    for user_query, response in zip(
-        st.session_state["user_prompt_history"], st.session_state["chat_answer_history"]
-    ):
-        # User Message (Right Aligned)
-        with st.container():
-            st.markdown(
-                f"""
-                <div style="background-color:#dcf8c6; padding:10px; border-radius:10px; margin:5px 40px 5px auto; width:fit-content; max-width:70%;">
-                    <b>You:</b><br> {user_query}
-                </div>
-                """,
-                unsafe_allow_html=True,
+        # Bot section - display below the workspace management section
+        st.subheader(f"Helping Bot for Workspace: {selected_workspace}")
+        st.markdown("**Ask questions related to the PDFs in this workspace.**")
+
+        # Initialize session state for chat history if not already initialized
+        if "user_prompt_history" not in st.session_state:
+            st.session_state["user_prompt_history"] = []
+        if "chat_answer_history" not in st.session_state:
+            st.session_state["chat_answer_history"] = []
+
+        # User input for chat
+        # Create a form for user input
+
+        with st.form(key="chat_form", clear_on_submit=True):
+            prompt = st.text_input(
+                "💬 **Ask me anything:**", placeholder="Type your question here..."
             )
+            # Submit button for sending the query
+            submit_button = st.form_submit_button("Submit")
 
-        # Bot Response (Left Aligned)
-        with st.container():
-            st.markdown(
-                f"""
-                <div style="background-color:#f0f0f0; padding:10px; border-radius:10px; margin:5px auto 5px 40px; width:fit-content; max-width:70%;">
-                    <b>Bot:</b><br> {response}
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+        # Handle submission and call the chat function
+        if submit_button and prompt:
+            with st.spinner("Thinking..."):
+                # Call the helper_bot to handle chat
+                response = handle_chat(prompt, selected_workspace)
+                # Clear the form by setting the prompt to an empty string
+                st.session_state.prompt = ""
+
+        # Display chat history with better UI\
+        st.markdown("---")  # Separator for chat messages
+        if st.session_state["chat_answer_history"]:
+            for user_query, response in zip(
+                st.session_state["user_prompt_history"],
+                st.session_state["chat_answer_history"],
+            ):
+                # Display User Message
+                with st.container():
+                    st.markdown(
+                        f"<div style='background-color:#dcf8c6; padding:10px; border-radius:10px; margin:5px 40px 5px auto; width:fit-content; max-width:70%;'><b>You:</b><br>{user_query}</div>",
+                        unsafe_allow_html=True,
+                    )
+
+                # Display Bot Response
+                with st.container():
+                    st.markdown(
+                        f"<div style='background-color:#f0f0f0; padding:10px; border-radius:10px; margin:5px auto 5px 40px; width:fit-content; max-width:70%;'><b>Bot:</b><br>{response}</div>",
+                        unsafe_allow_html=True,
+                    )
+
+
+if __name__ == "__main__":
+    main()

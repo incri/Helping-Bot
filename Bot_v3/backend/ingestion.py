@@ -16,6 +16,9 @@ from dotenv import load_dotenv
 load_dotenv()  # Load environment variables from .env
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+WORKSPACE_DIR = os.getenv("WORKSPACE_DIR")
+
+print(WORKSPACE_DIR)
 
 if not PINECONE_API_KEY:
     raise ValueError(
@@ -28,7 +31,6 @@ pc = Pinecone(api_key=PINECONE_API_KEY)
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # Directory to store workspace metadata
-WORKSPACE_DIR = "./workspaces"
 os.makedirs(WORKSPACE_DIR, exist_ok=True)
 
 
