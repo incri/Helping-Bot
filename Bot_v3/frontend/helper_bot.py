@@ -1,7 +1,14 @@
-# helper_bot.py
-
 import streamlit as st
 from backend.core import retrieve_answer
+from helper.db import chat_histories
+
+
+def fetch_chat_history_from_mongo(workspace_name: str):
+    """Fetches the chat history from MongoDB for the specific workspace."""
+    workspace_chat = chat_histories.find_one({"workspace_name": workspace_name})
+    if workspace_chat:
+        return workspace_chat["chat_history"]
+    return []  # Return an empty list if no history exists
 
 
 def handle_chat(prompt: str, selected_workspace: str) -> str:
@@ -10,11 +17,14 @@ def handle_chat(prompt: str, selected_workspace: str) -> str:
     if not selected_workspace:
         return "Please select a workspace first."
 
+    # Retrieve previous chat history from MongoDB
+    chat_history = fetch_chat_history_from_mongo(selected_workspace)
+
     # Call retrieve_answer function to get the bot's response
     response = retrieve_answer(
         query=prompt,
         workspace_name=selected_workspace,
-        chat_history=st.session_state["chat_answer_history"],
+        chat_history=chat_history,
     )
 
     # Format the response with source links
@@ -22,9 +32,5 @@ def handle_chat(prompt: str, selected_workspace: str) -> str:
     formatted_response = f"{response['answer']} \n\n 📌 **Sources:**\n" + "\n".join(
         f"{i+1}. {src}" for i, src in enumerate(sorted(list(sources)))
     )
-
-    # Update session state with the new conversation
-    st.session_state["user_prompt_history"].append(prompt)
-    st.session_state["chat_answer_history"].append(formatted_response)
 
     return formatted_response
