@@ -1,10 +1,6 @@
 import streamlit as st
-from frontend.workspace import (
-    handle_pdf_upload,
-    create_workspace,
-    list_workspaces,
-)
-from frontend.helper_bot import handle_chat
+from frontend.workspace import handle_pdf_upload, create_workspace, list_workspaces
+from frontend.helper_bot import handle_chat, fetch_chat_history_from_mongo
 
 
 def main():
@@ -24,7 +20,7 @@ def main():
 
     # List and select existing workspaces
     st.sidebar.subheader("Existing Workspaces")
-    workspaces = list_workspaces()
+    workspaces = list_workspaces()  # Your function to list workspaces
     selected_workspace = st.sidebar.selectbox(
         "Select a workspace:", ["-- Select --"] + workspaces
     )
@@ -37,6 +33,7 @@ def main():
         st.session_state["user_prompt_history"] = []
         st.session_state["chat_answer_history"] = []
         st.session_state["last_workspace"] = selected_workspace
+        st.session_state["chat_fetched_from_mongo"] = False  # Reset flag
         st.rerun()  # Refresh the page on workspace switch
 
     # Proceed only if a workspace is selected
@@ -55,43 +52,59 @@ def main():
             st.session_state["chat_answer_history"] = []
 
         # User input for chat
-        # Create a form for user input
-
         with st.form(key="chat_form", clear_on_submit=True):
             prompt = st.text_input(
                 "💬 **Ask me anything:**", placeholder="Type your question here..."
             )
-            # Submit button for sending the query
             submit_button = st.form_submit_button("Submit")
 
         # Handle submission and call the chat function
-        if submit_button and prompt:
-            with st.spinner("Thinking..."):
-                # Call the helper_bot to handle chat
-                response = handle_chat(prompt, selected_workspace)
-                # Clear the form by setting the prompt to an empty string
-                st.session_state.prompt = ""
+        if submit_button:
+            if prompt.strip() == "":
+                st.error("Please enter a valid question!")
+            else:
+                with st.spinner("Thinking..."):
+                    try:
+                        # Call the helper_bot to handle chat
+                        response = handle_chat(prompt, selected_workspace)
 
-        # Display chat history with better UI\
-        st.markdown("---")  # Separator for chat messages
-        if st.session_state["chat_answer_history"]:
-            for user_query, response in zip(
-                st.session_state["user_prompt_history"],
-                st.session_state["chat_answer_history"],
-            ):
-                # Display User Message
-                with st.container():
-                    st.markdown(
-                        f"<div style='background-color:#dcf8c6; padding:10px; border-radius:10px; margin:5px 40px 5px auto; width:fit-content; max-width:70%;'><b>You:</b><br>{user_query}</div>",
-                        unsafe_allow_html=True,
-                    )
+                        # Append the new chat to session_state
+                        st.session_state["user_prompt_history"].append(prompt)
+                        st.session_state["chat_answer_history"].append(response)
+                        st.session_state.prompt = ""  # Clear the form after submission
+                    except Exception as e:
+                        st.error(f"An error occurred: {e}")
 
-                # Display Bot Response
-                with st.container():
-                    st.markdown(
-                        f"<div style='background-color:#f0f0f0; padding:10px; border-radius:10px; margin:5px auto 5px 40px; width:fit-content; max-width:70%;'><b>Bot:</b><br>{response}</div>",
-                        unsafe_allow_html=True,
-                    )
+        # If the workspace history is not fetched yet, fetch from MongoDB
+        if not st.session_state.get("chat_fetched_from_mongo", False):
+            chat_history = fetch_chat_history_from_mongo(selected_workspace)
+            if chat_history:
+                # Append MongoDB chat history to session state chat history
+                for entry in chat_history:
+                    if entry["role"] == "user":
+                        st.session_state["user_prompt_history"].append(entry["content"])
+                    elif entry["role"] == "assistant":
+                        st.session_state["chat_answer_history"].append(entry["content"])
+
+            # Set flag that history has been fetched from MongoDB
+            st.session_state["chat_fetched_from_mongo"] = True
+
+    # Display current chat history (session_state + MongoDB history combined)
+    if st.session_state["chat_answer_history"]:
+        for user_query, response in zip(
+            st.session_state["user_prompt_history"],
+            st.session_state["chat_answer_history"],
+        ):
+            if user_query:  # Display user messages
+                st.markdown(
+                    f"<div style='background-color:#dcf8c6; padding:10px; border-radius:10px; margin:5px 40px 5px auto; width:fit-content; max-width:70%;'><b>You:</b><br>{user_query}</div>",
+                    unsafe_allow_html=True,
+                )
+            if response:  # Display bot responses
+                st.markdown(
+                    f"<div style='background-color:#f0f0f0; padding:10px; border-radius:10px; margin:5px auto 5px 40px; width:fit-content; max-width:70%;'><b>Bot:</b><br>{response}</div>",
+                    unsafe_allow_html=True,
+                )
 
 
 if __name__ == "__main__":
