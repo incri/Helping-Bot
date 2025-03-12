@@ -51,7 +51,65 @@ def main():
         if "chat_answer_history" not in st.session_state:
             st.session_state["chat_answer_history"] = []
 
-        # User input for chat
+        st.markdown(
+            """
+        <style>
+            /* Fix the form at the bottom of the screen */
+            .stForm {
+                position: fixed;
+                bottom: 20px; /* Slightly raised from the bottom */
+                left: 45%;
+                transform: translateX(-25%);
+                width: 950px;
+                padding: 15px;
+                background-color: #f7f7f7; /* Light, neutral background */
+                border-radius: 12px;
+                box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 14px;
+                z-index: 10000;
+            }
+
+            .stTextInput input {
+                padding: 12px;
+                border-radius: 8px;
+                font-size: 16px;
+                transition: all 0.3s ease;
+                width: 800px;
+            }
+
+            .stTextInput input:focus {
+                border-color: #0073e6;
+            }
+
+            /* Style for the submit button */
+            .stButton button {
+                background-color: #0073e6;
+                color: white;
+                border-radius: 8px;
+                border: none;
+                padding: 12px 20px;
+                font-size: 16px;
+                margin-left: 15px;
+                cursor: pointer;
+                transition: background-color 0.3s ease, transform 0.2s ease;
+            }
+
+            .stButton button:hover {
+                background-color: #005bb5;
+                transform: translateY(-2px);
+            }
+
+            .stButton button:active {
+                transform: translateY(0);
+            }
+        </style>
+        """,
+            unsafe_allow_html=True,
+        )
+
         with st.form(key="chat_form", clear_on_submit=True):
             prompt = st.text_input(
                 "💬 **Ask me anything:**", placeholder="Type your question here..."
@@ -105,6 +163,10 @@ def main():
                     f"<div style='background-color:#f0f0f0; padding:10px; border-radius:10px; margin:5px auto 5px 40px; width:fit-content; max-width:70%;'><b>Bot:</b><br>{response}</div>",
                     unsafe_allow_html=True,
                 )
+        st.markdown(
+            f"<div style=' padding:14px;  margin:10px auto 5px 40px; width:fit-content; max-width:70%;'></div>",
+            unsafe_allow_html=True,
+        )
 
 
 if __name__ == "__main__":
