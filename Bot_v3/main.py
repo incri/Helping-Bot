@@ -53,68 +53,104 @@ def main():
 
         st.markdown(
             """
-        <style>
-            /* Fix the form at the bottom of the screen */
-            .stForm {
-                position: fixed;
-                bottom: 20px; /* Slightly raised from the bottom */
-                left: 45%;
-                transform: translateX(-25%);
-                width: 950px;
-                padding: 15px;
-                background-color: #f7f7f7; /* Light, neutral background */
-                border-radius: 12px;
-                box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-top: 14px;
-                z-index: 10000;
-            }
+            <style>
+                /* Chat Container */
+                .chat-container {
+                    max-width: 80%;
+                    margin: auto;
+                    padding-bottom: 100px; /* Space for input field */
+                }
 
-            .stTextInput input {
-                padding: 12px;
-                border-radius: 8px;
-                font-size: 16px;
-                transition: all 0.3s ease;
-                width: 800px;
-            }
+                /* User message bubble */
+                .user-message {
+                    back ground-color: #dcf8c6;
+                    padding: 12px 16px;
+                    border-radius: 15px;
+                    margin: 8px 40px 8px auto;
+                    max-width: 70%;
+                    text-align: left;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                    word-wrap: break-word;
+                }
 
-            .stTextInput input:focus {
-                border-color: #0073e6;
-            }
+                /* Bot message bubble */
+                .bot-message {
+                    background-color: #f0f0f0;
+                    padding: 12px 16px;
+                    border-radius: 15px;
+                    margin: 8px auto 8px 40px;
+                    max-width: 70%;
+                    text-align: left;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                    word-wrap: break-word;
+                }
 
-            /* Style for the submit button */
-            .stButton button {
-                background-color: #0073e6;
-                color: white;
-                border-radius: 8px;
-                border: none;
-                padding: 12px 20px;
-                font-size: 16px;
-                margin-left: 15px;
-                cursor: pointer;
-                transition: background-color 0.3s ease, transform 0.2s ease;
-            }
+                /* Chat Input Form (Fixed at bottom) */
+                .chat-input {
+                    position: fixed;
+                    bottom: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 950px;
+                    max-width: 90%;
+                    background-color: #ffffff;
+                    padding: 15px;
+                    border-radius: 12px;
+                    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    z-index: 10000;
+                }
 
-            .stButton button:hover {
-                background-color: #005bb5;
-                transform: translateY(-2px);
-            }
+                /* Input field */
+                .chat-input .stTextInput input {
+                    flex-grow: 1;
+                    padding: 12px;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    border: 1px solid #ccc;
+                    width: 100%;
+                    transition: all 0.3s ease;
+                }
 
-            .stButton button:active {
-                transform: translateY(0);
-            }
-        </style>
-        """,
+                .chat-input .stTextInput input:focus {
+                    border-color: #0073e6;
+                    outline: none;
+                }
+
+                /* Submit Button */
+                .chat-input .stButton button {
+                    background-color: #0073e6;
+                    color: white;
+                    border-radius: 8px;
+                    border: none;
+                    padding: 12px 20px;
+                    font-size: 16px;
+                    margin-left: 10px;
+                    cursor: pointer;
+                    transition: background-color 0.3s ease, transform 0.2s ease;
+                }
+
+                .chat-input .stButton button:hover {
+                    background-color: #005bb5;
+                    transform: translateY(-2px);
+                }
+
+                .chat-input .stButton button:active {
+                    transform: translateY(0);
+                }
+
+            </style>
+            """,
             unsafe_allow_html=True,
         )
 
-        with st.form(key="chat_form", clear_on_submit=True):
+        with st.form(key="chat_input_form", clear_on_submit=True):
             prompt = st.text_input(
                 "💬 **Ask me anything:**", placeholder="Type your question here..."
             )
-            submit_button = st.form_submit_button("Submit")
+            submit_button = st.form_submit_button("Send")
 
         # Handle submission and call the chat function
         if submit_button:
@@ -153,20 +189,21 @@ def main():
             st.session_state["user_prompt_history"],
             st.session_state["chat_answer_history"],
         ):
-            if user_query:  # Display user messages
+            st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
+
+            if user_query:
                 st.markdown(
-                    f"<div style='background-color:#dcf8c6; padding:10px; border-radius:10px; margin:5px 40px 5px auto; width:fit-content; max-width:70%;'><b>You:</b><br>{user_query}</div>",
+                    f"<div class='user-message'><b>You:</b><br>{user_query}</div>",
                     unsafe_allow_html=True,
                 )
-            if response:  # Display bot responses
+
+            if response:
                 st.markdown(
-                    f"<div style='background-color:#f0f0f0; padding:10px; border-radius:10px; margin:5px auto 5px 40px; width:fit-content; max-width:70%;'><b>Bot:</b><br>{response}</div>",
+                    f"<div class='bot-message'><b>Bot:</b><br>{response}</div>",
                     unsafe_allow_html=True,
                 )
-        st.markdown(
-            f"<div style=' padding:14px;  margin:10px auto 5px 40px; width:fit-content; max-width:70%;'></div>",
-            unsafe_allow_html=True,
-        )
+
+            st.markdown("</div>", unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
