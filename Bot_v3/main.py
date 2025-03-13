@@ -63,7 +63,7 @@ def main():
 
                 /* User message bubble */
                 .user-message {
-                    back ground-color: #dcf8c6;
+                    background-color: #dcf8c6;
                     padding: 12px 16px;
                     border-radius: 15px;
                     margin: 8px 40px 8px auto;
