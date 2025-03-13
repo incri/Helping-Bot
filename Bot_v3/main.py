@@ -51,101 +51,6 @@ def main():
         if "chat_answer_history" not in st.session_state:
             st.session_state["chat_answer_history"] = []
 
-        st.markdown(
-            """
-            <style>
-                /* Chat Container */
-                .chat-container {
-                    max-width: 80%;
-                    margin: auto;
-                    padding-bottom: 100px; /* Space for input field */
-                }
-
-                /* User message bubble */
-                .user-message {
-                    background-color: #dcf8c6;
-                    padding: 12px 16px;
-                    border-radius: 15px;
-                    margin: 8px 40px 8px auto;
-                    max-width: 70%;
-                    text-align: left;
-                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                    word-wrap: break-word;
-                }
-
-                /* Bot message bubble */
-                .bot-message {
-                    background-color: #f0f0f0;
-                    padding: 12px 16px;
-                    border-radius: 15px;
-                    margin: 8px auto 8px 40px;
-                    max-width: 70%;
-                    text-align: left;
-                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                    word-wrap: break-word;
-                }
-
-                /* Chat Input Form (Fixed at bottom) */
-                .chat-input {
-                    position: fixed;
-                    bottom: 20px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    width: 950px;
-                    max-width: 90%;
-                    background-color: #ffffff;
-                    padding: 15px;
-                    border-radius: 12px;
-                    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    z-index: 10000;
-                }
-
-                /* Input field */
-                .chat-input .stTextInput input {
-                    flex-grow: 1;
-                    padding: 12px;
-                    border-radius: 8px;
-                    font-size: 16px;
-                    border: 1px solid #ccc;
-                    width: 100%;
-                    transition: all 0.3s ease;
-                }
-
-                .chat-input .stTextInput input:focus {
-                    border-color: #0073e6;
-                    outline: none;
-                }
-
-                /* Submit Button */
-                .chat-input .stButton button {
-                    background-color: #0073e6;
-                    color: white;
-                    border-radius: 8px;
-                    border: none;
-                    padding: 12px 20px;
-                    font-size: 16px;
-                    margin-left: 10px;
-                    cursor: pointer;
-                    transition: background-color 0.3s ease, transform 0.2s ease;
-                }
-
-                .chat-input .stButton button:hover {
-                    background-color: #005bb5;
-                    transform: translateY(-2px);
-                }
-
-                .chat-input .stButton button:active {
-                    transform: translateY(0);
-                }
-
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
-
         with st.form(key="chat_input_form", clear_on_submit=True):
             prompt = st.text_input(
                 "💬 **Ask me anything:**", placeholder="Type your question here..."
@@ -189,8 +94,6 @@ def main():
             st.session_state["user_prompt_history"],
             st.session_state["chat_answer_history"],
         ):
-            st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
-
             if user_query:
                 st.markdown(
                     f"<div class='user-message'><b>You:</b><br>{user_query}</div>",
@@ -203,7 +106,37 @@ def main():
                     unsafe_allow_html=True,
                 )
 
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown(
+                """
+            <style>
+
+                /* User message bubble */
+                .user-message {
+                    background-color: #dcf8c6;
+                    padding: 12px 16px;
+                    border-radius: 15px;
+                    margin: 8px 40px 8px auto;
+                    max-width: 70%;
+                    text-align: left;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                    word-wrap: break-word;
+                }
+
+                /* Bot message bubble */
+                .bot-message {
+                    background-color: #f0f0f0;
+                    padding: 12px 16px;
+                    border-radius: 15px;
+                    margin: 8px auto 8px 40px;
+                    max-width: 70%;
+                    text-align: left;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                    word-wrap: break-word;
+                }
+            </style>
+            """,
+                unsafe_allow_html=True,
+            )
 
 
 if __name__ == "__main__":
