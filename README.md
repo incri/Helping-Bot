@@ -2,7 +2,7 @@
 
 This project allows you to manage PDF documents in dedicated workspaces and interact with them through a helpful bot powered by AI. The bot can answer questions based on the content of the uploaded PDFs, making it easier to retrieve information from large collections of documents.
 
-![Main Page Image](./image.png)
+![Main Page Image](./image.jpg)
 
 ## Features
 
