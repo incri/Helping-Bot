@@ -51,11 +51,36 @@ def main():
         if "chat_answer_history" not in st.session_state:
             st.session_state["chat_answer_history"] = []
 
-        with st.form(key="chat_input_form", clear_on_submit=True):
+        with st.form(
+            key="chat_input_form",
+            clear_on_submit=True,
+        ):
             prompt = st.text_input(
                 "💬 **Ask me anything:**", placeholder="Type your question here..."
             )
             submit_button = st.form_submit_button("Send")
+
+        st.markdown(
+            """
+        <style>
+            [data-testid="stForm"] {
+            position: fixed;
+            bottom: 0px;
+            left: 60%;
+            transform: translateX(-50%);
+            width: max-width;
+            max-width: 100%;
+            background-color: #ffffff;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index:1000;
+            }
+        </style>
+        """,
+            unsafe_allow_html=True,
+        )
 
         # Handle submission and call the chat function
         if submit_button:
