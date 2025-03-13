@@ -68,7 +68,7 @@ def main():
             bottom: 0px;
             left: 60%;
             transform: translateX(-50%);
-            width: max-width;
+            width: 800px;
             max-width: 100%;
             background-color: #ffffff;
             padding: 15px;
@@ -76,6 +76,10 @@ def main():
             justify-content: space-between;
             align-items: center;
             z-index:1000;
+            }
+            [data-testid="stTextInput"] {
+            width: 765px;
+            max-width: 100%;
             }
         </style>
         """,
