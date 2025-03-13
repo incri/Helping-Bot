@@ -41,5 +41,4 @@ This project allows you to manage PDF documents in dedicated workspaces and inte
 ## Installation
 
 1. Clone the repository:
-   ```bash
-  https://github.com/incri/Helping-Bot.git
+   ```git clone https://github.com/incri/Helping-Bot.git ```
