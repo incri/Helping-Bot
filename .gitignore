@@ -135,6 +135,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+faiss_index_react/
+uploads/
+workspaces/
 
 # Spyder project settings
 .spyderproject
