@@ -38,8 +38,49 @@ This project allows you to manage PDF documents in dedicated workspaces and inte
 4. **Switch Between Workspaces**: 
    - If you have multiple workspaces, you can easily switch between them. When switching, the bot will be context-aware and provide responses based on the PDFs in the selected workspace.
 
-## Installation
+## 🚀 Installation  
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/pdf-vector-store-helper-bot.git
+Follow these steps to set up **Helping Bot** on your local machine:  
+
+### 1⃣ Clone the Repository  
+```bash
+git clone https://github.com/incri/Helping-Bot.git
+cd Helping-Bot
+```
+
+### 2⃣ Create and Activate a Virtual Environment  
+#### On macOS/Linux:  
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+#### On Windows:  
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+### 3⃣ Install Dependencies  
+```bash
+pip install -r requirements.txt
+```
+
+### 4⃣ Set Up Environment Variables  
+Copy the example environment file:  
+#### On macOS/Linux:  
+```bash
+cp .env copy .env
+```
+#### On Windows:  
+```bash
+copy .env copy .env
+```
+
+Now, open `.env` and update the required API keys:  
+- **Pinecone API Key** → Get it from [Pinecone](https://www.pinecone.io/).  
+- **MongoDB Connection String** → Create a database on [MongoDB Atlas](https://www.mongodb.com/atlas/database) or use a local instance.  
+- **Google API Key** → Required credentials (refer to `.env.example`).  
+
+### 5⃣ Run the Application  
+```bash
+streamlit run helping_bot/main.py
